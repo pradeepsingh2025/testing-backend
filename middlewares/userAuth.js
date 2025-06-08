@@ -3,9 +3,8 @@ const User = require('../models/userModel')
 
 
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
+    const token = req.headers.authorization;
+    
     if (!token) {
         return res.status(401).json({ error: 'Access token is required' });
     }
@@ -26,7 +25,7 @@ const getUserProfile = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    res.json(user);
   } catch (error) {
     console.error('Profile error:', error);
     res.status(500).json({ error: 'Internal server error' });

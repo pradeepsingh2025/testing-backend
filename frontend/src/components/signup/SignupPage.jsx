@@ -67,16 +67,32 @@ const SignupPage = () => {
     setSubmitMessage('');
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Here you would typically make your API call
-      console.log('Signup data:', formData);
-      
-      setSubmitMessage('Account created successfully!');
-      setFormData({ email: '', password: '' });
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store the JWT token (you might want to use a more secure method)
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        setSubmitMessage('Account created successfully!');
+        setFormData({ email: '', password: '' });
+        
+        // Optionally redirect to dashboard/home page
+        // window.location.href = '/dashboard';
+      } else {
+        setSubmitMessage(data.error || 'Error creating account. Please try again.');
+      }
     } catch (error) {
-      setSubmitMessage('Error creating account. Please try again.');
+      console.error('Signup error:', error);
+      setSubmitMessage('Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }

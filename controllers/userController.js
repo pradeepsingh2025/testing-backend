@@ -99,7 +99,7 @@ const getUser = async (req, res) => {
     const isPasswordCorrect = await user.comparePassword(password);
     if (!isPasswordCorrect) {
       return res.status(401).json({ 
-        error: 'Invalid email or password' 
+        error: 'Invalid password' 
       });
     }
 

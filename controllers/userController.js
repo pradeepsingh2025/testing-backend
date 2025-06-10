@@ -43,7 +43,7 @@ const createUser = async (req, res) => {
 
     // Return success response (don't send password)
     res.status(201).json({
-      message: 'User created successfully',
+      message: 'Account created successfully',
       token,
       user: {
         id: user._id,
@@ -58,7 +58,7 @@ const createUser = async (req, res) => {
     // Handle MongoDB duplicate key error
     if (error.code === 11000) {
       return res.status(409).json({ 
-        error: 'User with this email already exists' 
+        error: 'User with this email already exists(1)' 
       });
     }
     

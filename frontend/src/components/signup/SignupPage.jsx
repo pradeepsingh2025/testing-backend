@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -10,7 +10,12 @@ import {
   Alert
 } from '@mui/material';
 
+import { useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+
+
 const SignupPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,6 +23,32 @@ const SignupPage = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
+
+  // Check if user is already logged in and redirect
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Check if token is still valid (basic check)
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Date.now() / 1000;
+        
+        if (payload.exp > currentTime) {
+          // Token is still valid, redirect to home
+          navigate('/');
+          return;
+        } else {
+          // Token expired, remove it
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      } catch (error) {
+        // Invalid token, remove it
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,15 +109,17 @@ const SignupPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store the JWT token (you might want to use a more secure method)
+        // Store the JWT token
         localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
         
-        setSubmitMessage('Account created successfully!');
+        setSubmitMessage(data.message); //'Account created successfully!'
         setFormData({ email: '', password: '' });
         
-        // Optionally redirect to dashboard/home page
-        // window.location.href = '/dashboard';
+        // Redirect to home page after successful signup
+        setTimeout(() => {
+          navigate('/',{state: data.user});
+          
+        }, 1500); // Small delay to show success message
       } else {
         setSubmitMessage(data.error || 'Error creating account. Please try again.');
       }
@@ -126,6 +159,11 @@ const SignupPage = () => {
                 sx={{ mb: 2 }}
               >
                 {submitMessage}
+                {submitMessage.includes('successfully') && (
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Redirecting to home page...
+                  </Typography>
+                )}
               </Alert>
             )}
             
@@ -171,6 +209,7 @@ const SignupPage = () => {
               >
                 {isSubmitting ? 'Creating Account...' : 'Sign Up'}
               </Button>
+              <NavLink to='/login'>Or Login</NavLink>
             </Box>
           </CardContent>
         </Card>
